@@ -1,41 +1,39 @@
 
-const http = require('https');
+const https = require('https');
 
-http.get("https://api.open-meteo.com/v1/meteofrance?latitude=49.5&longitude=0.13333&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m", (res) => {
+function getDatas(callback) {
+    https.get("https://api.open-meteo.com/v1/meteofrance?latitude=49.5&longitude=0.13333&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=auto", function (res) {
     
-    const { statusCode } = res;
-    const contentType = res.headers['content-type'];
-    
-    let error;
-    
-    if (statusCode !== 200) {
-      error = new Error('Request Failed.\n' +
-                        `Status Code: ${statusCode}`);
-    } else if (!/^application\/json/.test(contentType)) {
-        error = new Error('Invalid content-type.\n' +
-                        `Expected application/json but received ${contentType}`);
-    }
-    if (error) {
-        console.error(error.message);
-        // Consume response data to free up memory
-        res.resume();
-        return;
-    }
-    
-    res.setEncoding('utf8');
-    let rawData = '';
+        if (res.statusCode == 200) {
+            let rawData = '';
 
-    res.on('data', (chunk) => { rawData += chunk; });
-    res.on('end', () => {
-            try {
-              const parsedData = JSON.parse(rawData);
-              console.log(parsedData);
-            } catch (e) {
-              console.error(e.message);
-            }
-        })
-        .on('error', (e) => {
-        console.error(`Got error: ${e.message}`);
+            res.on('data', function (chunk) { rawData += chunk; });
+            res.on('end', function () {
+                    try {
+                        const parsedData = JSON.parse(rawData);
+                        // console.log(parsedData);
+
+                        // date format
+                        let date = new Date(parsedData.current.time);
+                        let date_options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false };
+                        var dateFormatted = date.toLocaleString('fr-FR', date_options);
+
+                        let datas = {
+                            time : dateFormatted,
+                            wind_speed : parsedData.current.wind_speed_10m + ' ' + parsedData.current_units.wind_speed_10m,
+                            wind_direction : parsedData.current.wind_direction_10m + ' ' + parsedData.current_units.wind_direction_10m,
+                            wind_gusts : parsedData.current.wind_gusts_10m + ' ' + parsedData.current_units.wind_gusts_10m,
+                        };
+                        
+                        callback(datas);
+                    } catch (e) {
+                        console.error(e.message);
+                    }
+                })
+                .on('error', (e) => {
+                console.error(`Got error: ${e.message}`);
+            });
+        };
     });
-
-});
+};
+getDatas(function(retour) {console.log(retour);});
