@@ -1,5 +1,26 @@
-
+const http = require('http');
 const https = require('https');
+
+const hostname = '127.0.0.1';
+const port = 3000;
+
+const server = http.createServer(function handler(req, res) {
+    const headers = {
+        'Access-Control-Allow-Origin': '*', /* @dev First, read about security */
+        'Access-Control-Allow-Headers': '*', /* @dev First, read about security */
+        'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+        'Access-Control-Max-Age': 2592000, // 30 days
+    };
+    getDatas(function(retour) {
+        res.writeHead(200, headers);
+        res.write(JSON.stringify(retour));
+        res.end();
+    });
+});
+
+server.listen(port, hostname, () => {
+    console.log(`Server running at http://${hostname}:${port}/`);
+});
 
 function getDatas(callback) {
     https.get("https://api.open-meteo.com/v1/meteofrance?latitude=52.52&longitude=13.41&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=auto", function (res) {
@@ -90,4 +111,3 @@ function getDatas(callback) {
         };
     });
 };
-getDatas(function(retour) {console.log(retour);});
