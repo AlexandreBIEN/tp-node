@@ -12,10 +12,30 @@
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Headers': '*',
         }})
-        // .then(function (response) {
           let datas = await data.json();
           console.log(datas);
-        // })
+
+          let time_list = document.getElementById("time_list");
+          let row = document.createElement("div")
+          const attrRow = document.createAttribute("class");
+          attrRow.value = "row";
+          row.setAttributeNode(attrRow);
+          let col = document.createElement("div")
+          const attrCol = document.createAttribute("class");
+          attrCol.value = "col";
+          col.setAttributeNode(attrCol);
+          let template = `<div class="row">
+                            <div class="col">Heure</div>
+                            <div class="col">Vitesse du vent</div>
+                            <div class="col">Direction du vent</div>
+                            <div class="col">Rafale de vent</div>
+                            <div class="col">Beaufort</div>
+                          </div>`;
+
+          datas.forEach(element => {
+            col.innerHTML = element.time;
+            time_list.innerHTML = template;
+          });
       }
       getData();
     </script>
